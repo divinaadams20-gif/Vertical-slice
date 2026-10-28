@@ -381,3 +381,8 @@ docker-compose.override.yml
 
 # Files
 Add-Feature-steps.md
+
+## Local SQLite database
+*.db
+*.db-shm
+*.db-wal
