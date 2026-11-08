@@ -1,6 +1,8 @@
+﻿using Microsoft.AspNetCore.Mvc;
 namespace Api.Features.Students;
 
 using Api.Common.Extensions;
+using Api.Common.Authorization;
 using Application.Abstractions.Messaging;
 using Application.Features.Students.CreateStudent;
 using Application.Features.Students.GetAllStudents;
@@ -12,7 +14,8 @@ public static class StudentEndpoints
     public static void MapStudentEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/students")
-            .WithTags("Students");
+            .WithTags("Students")
+            .RequireAuthorization(Policies.CanManageStudents);
 
         group.MapGet("/", GetAll)
             .WithName("GetAllStudents")
@@ -28,7 +31,7 @@ public static class StudentEndpoints
     }
 
     private static async Task<IResult> GetAll(
-        IQueryHandler<GetAllStudentsQuery, Result<GetAllStudentsResponse>> handler,
+        [FromServices] IQueryHandler<GetAllStudentsQuery, Result<GetAllStudentsResponse>> handler,
         CancellationToken cancellationToken)
     {
         var query = new GetAllStudentsQuery();
@@ -40,7 +43,7 @@ public static class StudentEndpoints
 
     private static async Task<IResult> Create(
         CreateStudentCommand command,
-        ICommandHandler<CreateStudentCommand, Result<CreateStudentResponse>> handler,
+        [FromServices] ICommandHandler<CreateStudentCommand, Result<CreateStudentResponse>> handler,
         CancellationToken cancellationToken)
     {
         var result = await handler.HandleAsync(command, cancellationToken);
@@ -51,7 +54,7 @@ public static class StudentEndpoints
 
     private static async Task<IResult> GetById(
         Guid id,
-        IQueryHandler<GetStudentByIdQuery, Result<GetStudentByIdResponse>> handler,
+        [FromServices] IQueryHandler<GetStudentByIdQuery, Result<GetStudentByIdResponse>> handler,
         CancellationToken cancellationToken)
     {
         var query = new GetStudentByIdQuery(id);
@@ -61,3 +64,7 @@ public static class StudentEndpoints
             : result.ToProblemDetails();
     }
 }
+
+
+
+

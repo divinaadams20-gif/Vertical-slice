@@ -8,9 +8,18 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
 {
     public AppDbContext CreateDbContext(string[] args)
     {
+        var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "VerticalSlice.slnx")))
+        {
+            directory = directory.Parent;
+        }
+
+        var databasePath = directory is null
+            ? "verticalslice.db"
+            : Path.Combine(directory.FullName, "Api", "verticalslice.db");
         var connectionString =
             Environment.GetEnvironmentVariable("ConnectionStrings__Database")
-            ?? "Data Source=verticalslice.db";
+            ?? $"Data Source={databasePath}";
 
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite(connectionString)

@@ -28,6 +28,8 @@ public static class ResultExtensions
         string code when code.Contains("NotFound") => 404,
         string code when code.Contains("Validation") => 400,
         string code when code.Contains("Conflict") => 409,
+        string code when code.Contains("Unauthorized") || code.Contains("InvalidCredentials") => 401,
+        string code when code.Contains("Forbidden") => 403,
         _ => 500
     };
 }

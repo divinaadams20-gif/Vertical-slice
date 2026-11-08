@@ -1,6 +1,8 @@
+﻿using Microsoft.AspNetCore.Mvc;
 namespace Api.Features.Courses;
 
 using Api.Common.Extensions;
+using Api.Common.Authorization;
 using Application.Abstractions.Messaging;
 using Application.Features.Courses.CreateCourse;
 using Application.Features.Courses.GetAllCourses;
@@ -12,7 +14,8 @@ public static class CourseEndpoints
     public static void MapCourseEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/courses")
-            .WithTags("Courses");
+            .WithTags("Courses")
+            .RequireAuthorization();
 
         group.MapGet("/", GetAll)
             .WithName("GetAllCourses")
@@ -20,7 +23,8 @@ public static class CourseEndpoints
 
         group.MapPost("/", Create)
             .WithName("CreateCourse")
-            .WithSummary("Create a new course");
+            .WithSummary("Create a new course")
+            .RequireAuthorization(Policies.CanManageCourses);
 
         group.MapGet("/{id:guid}", GetById)
             .WithName("GetCourseById")
@@ -28,7 +32,7 @@ public static class CourseEndpoints
     }
 
     private static async Task<IResult> GetAll(
-        IQueryHandler<GetAllCoursesQuery, Result<GetAllCoursesResponse>> handler,
+        [FromServices] IQueryHandler<GetAllCoursesQuery, Result<GetAllCoursesResponse>> handler,
         CancellationToken cancellationToken)
     {
         var query = new GetAllCoursesQuery();
@@ -40,7 +44,7 @@ public static class CourseEndpoints
 
     private static async Task<IResult> Create(
         CreateCourseCommand command,
-        ICommandHandler<CreateCourseCommand, Result<CreateCourseResponse>> handler,
+        [FromServices] ICommandHandler<CreateCourseCommand, Result<CreateCourseResponse>> handler,
         CancellationToken cancellationToken)
     {
         var result = await handler.HandleAsync(command, cancellationToken);
@@ -51,7 +55,7 @@ public static class CourseEndpoints
 
     private static async Task<IResult> GetById(
         Guid id,
-        IQueryHandler<GetCourseByIdQuery, Result<GetCourseByIdResponse>> handler,
+        [FromServices] IQueryHandler<GetCourseByIdQuery, Result<GetCourseByIdResponse>> handler,
         CancellationToken cancellationToken)
     {
         var query = new GetCourseByIdQuery(id);
@@ -61,3 +65,7 @@ public static class CourseEndpoints
             : result.ToProblemDetails();
     }
 }
+
+
+
+
